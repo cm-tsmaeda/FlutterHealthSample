@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Health Sample</string>
-    
+
     <!-- Privacy Policy -->
     <string name="privacy_policy_title">プライバシーポリシー</string>
     <string name="privacy_policy_content">
