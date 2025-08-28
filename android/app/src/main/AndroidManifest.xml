@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
@@ -30,8 +34,12 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Intention to show Permissions screen for Health Connect API -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
         <activity
