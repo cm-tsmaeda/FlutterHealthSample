@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.sample.health_sample"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
