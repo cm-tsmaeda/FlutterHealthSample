@@ -7,7 +7,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="16dp">
 
         <TextView
             android:id="@+id/tv_privacy_title"
@@ -23,9 +24,10 @@
             android:id="@+id/tv_privacy_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
             android:text="@string/privacy_policy_content"
             android:textSize="16sp"
-            android:lineSpacingExtra="4dp" />
+            android:paddingBottom="20dp"/>
 
     </LinearLayout>
 
