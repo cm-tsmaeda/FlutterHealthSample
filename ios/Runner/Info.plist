@@ -43,5 +43,9 @@
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>このアプリはヘルスデータを読み取るためにHealthKitへのアクセスを必要とします。</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>このアプリはヘルスデータを書き込むためにHealthKitへのアクセスを必要とします。</string>
 </dict>
 </plist>

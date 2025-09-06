@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:health/health.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -21,18 +24,24 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   static const _methodChannel = MethodChannel('com.example.health_sample');
+  Health? _health;
 
-  int _counter = 0;
+  List<HealthDataType> _healthDataTypes = [
+    HealthDataType.STEPS,
+    // 基礎代謝 <- 今回は不要
+    HealthDataType.BASAL_ENERGY_BURNED,
+    // 活動エネルギー消費
+    HealthDataType.ACTIVE_ENERGY_BURNED,
+    HealthDataType.DISTANCE_WALKING_RUNNING,
+  ];
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  @override
+  void initState() {
+    super.initState();
+    if (Platform.isAndroid) {
+      // 総カロリー消費(Android Health Connect)
+      _healthDataTypes.add(HealthDataType.TOTAL_CALORIES_BURNED);
+    }
   }
 
   void _onButtonTapped() async {
@@ -42,6 +51,129 @@ class _HomeScreenState extends State<HomeScreen> {
     } on PlatformException catch (error) {
       print('Error occurred: $error');
     }
+  }
+
+  void _onHealthInitButtonTapped() async {
+    // Global Health instance
+    _health = Health();
+
+    if (_health == null) {
+      print('Health is null');
+      return;
+    }
+    final health = _health!;
+    // configure the health plugin before use.
+    await health.configure();
+
+    // requesting access to the data types before reading them
+    bool requested = await health.requestAuthorization(_healthDataTypes);
+    print('requested $requested');
+  }
+
+  void _onReadButtonTapped() async {
+    if (_health == null) {
+      print('Health is null');
+      return;
+    }
+    final health = _health!;
+
+    //final startDateStr = '2025-08-24T00:00:00+09:00'; // JSTにする必要がある
+    final startDateStr = '2025-08-24T00:00:00+09:00';
+    //final startDateStr = '2025-08-28T00:00:00Z'; // こっちだとUTCになるのでNG
+    final startDate = DateTime.parse(startDateStr);
+    final endDate = startDate.add(const Duration(days: 7));
+
+    final steps1 = await _getSteps1(startDate, endDate);
+    final steps2 = await _getSteps2(startDate, endDate);
+    final steps3 = await _getSteps3(startDate, endDate);
+
+    print('steps1: $steps1');
+    print('steps2: $steps2');
+    print('steps3: $steps3');
+  }
+
+  // 歩数取得。getTotalStepsInIntervalによる取得
+  Future<int?> _getSteps1(DateTime startDate, DateTime endDate) async {
+    if (_health == null) {
+      return null;
+    }
+    final health = _health!;
+    return await health.getTotalStepsInInterval(startDate, endDate);
+  }
+
+  // 歩数取得。getHealthDataFromTypesによる取得
+  Future<int?> _getSteps2(DateTime startDate, DateTime endDate) async {
+    if (_health == null) {
+      return null;
+    }
+    final health = _health!;
+
+    List<HealthDataPoint> healthData = await health.getHealthDataFromTypes(
+      types: _healthDataTypes,
+      startTime: startDate,
+      endTime: endDate,
+    );
+
+    health.removeDuplicates(healthData);
+
+    print('============');
+    healthData.forEach((data) {
+      String log = "";
+      log +=
+          "${data.dateFrom} - ${data.dateTo}: ${data.sourceId}, ${data.sourceName}, ${data.sourcePlatform}, ${data.deviceModel}, ${data.recordingMethod}, ${data.type.name}, ${data.value}, ${data.unit.name}";
+      print('Health data: $log');
+    });
+
+    num totalStepsCalclated = healthData.fold(0, (total, data) {
+      if (data.type == HealthDataType.STEPS &&
+          data.value is NumericHealthValue) {
+        //final numValue = (data.value as NumericHealthValue).numericValue;
+        //print('data.value: ${data.value.$type}, ${numValue}');
+        return total + (data.value as NumericHealthValue).numericValue;
+      }
+      return total;
+    });
+
+    return totalStepsCalclated.toInt();
+  }
+
+  // 歩数取得。getHealthDataFromTypesによる取得
+  // 歩数の集計はこちらで行うと思う
+  Future<int?> _getSteps3(DateTime startDate, DateTime endDate) async {
+    if (_health == null) {
+      return null;
+    }
+    final health = _health!;
+
+    List<HealthDataPoint> healthData = await health
+        .getHealthIntervalDataFromTypes(
+          types: _healthDataTypes,
+          startDate: startDate,
+          endDate: endDate,
+          interval: 24 * 60 * 60, // 秒
+        );
+
+    health.removeDuplicates(healthData);
+
+    print('============');
+    healthData.forEach((data) {
+      String log = "";
+      log +=
+          "${data.dateFrom} - ${data.dateTo}: ${data.sourceId}, ${data.sourceName}, ${data.sourcePlatform}, ${data.deviceModel}, ${data.recordingMethod}, ${data.type.name}, ${data.value}, ${data.unit.name}";
+      print('Health data: $log');
+    });
+
+    num totalStepsCalclated = healthData.fold(0, (total, data) {
+      if (data.type == HealthDataType.STEPS &&
+          data.value is NumericHealthValue) {
+        //final numValue = (data.value as NumericHealthValue).numericValue;
+        //print('data.value: ${data.value.$type}, ${numValue}');
+        return total + (data.value as NumericHealthValue).numericValue;
+      }
+      return total;
+    });
+
+    return totalStepsCalclated.toInt();
   }
 
   @override
@@ -62,38 +194,22 @@ class _HomeScreenState extends State<HomeScreen> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+      body: Column(
+        children: [
+          ElevatedButton(
+            onPressed: _onButtonTapped,
+            child: const Text('プライバシーポリシー'),
+          ),
+          ElevatedButton(
+            onPressed: _onHealthInitButtonTapped,
+            child: const Text('health初期化'),
+          ),
+          ElevatedButton(
+            onPressed: _onReadButtonTapped,
+            child: const Text('歩数読み取り'),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _onButtonTapped,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
