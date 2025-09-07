@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final health = _health!;
 
     //final startDateStr = '2025-08-24T00:00:00+09:00'; // JSTにする必要がある
-    final startDateStr = '2025-08-24T00:00:00+09:00';
+    final startDateStr = '2025-08-31T00:00:00+09:00';
     //final startDateStr = '2025-08-28T00:00:00Z'; // こっちだとUTCになるのでNG
     final startDate = DateTime.parse(startDateStr);
     final endDate = startDate.add(const Duration(days: 7));

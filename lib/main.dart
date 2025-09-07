@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'helath_sample.dart';
 import 'home_screen.dart';
 
 void main() {

@@ -1,8 +1,12 @@
 import Flutter
 import UIKit
 
+
 @main
 @objc class AppDelegate: FlutterAppDelegate {
+
+    private var coreMotionAggregator: CoreMotionAggregator?
+    
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -23,8 +27,12 @@ import UIKit
         }
       })
       
+      coreMotionAggregator = CoreMotionAggregator()
+      coreMotionAggregator?.fetchPedometerData()
       
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
+
 }
