@@ -26,6 +26,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static const _methodChannel = MethodChannel('com.example.health_sample');
   Health? _health;
+  DateTime? _walkingStartDate;
+  String _currentSteps1 = '';
+  String _currentSteps2 = '';
+  String _currentSteps3 = '';
 
   final List<HealthDataType> _healthDataTypes = [
     HealthDataType.STEPS,
@@ -150,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return totalStepsCalclated.toInt();
   }
 
-  // 歩数取得。getHealthDataFromTypesによる取得
+  // 歩数取得。getHealthIntervalDataFromTypesによる取得
   // 歩数の集計はこちらで行うと思う
   Future<int?> _getSteps3(DateTime startDate, DateTime endDate) async {
     if (_health == null) {
@@ -189,6 +193,37 @@ class _HomeScreenState extends State<HomeScreen> {
     return totalStepsCalclated.toInt();
   }
 
+  void _onWalkingStartButtonTapped() {
+    _walkingStartDate = DateTime.now();
+    setState(() {
+      _currentSteps1 = 'getTotalStepsInInterval: 0';
+      _currentSteps2 = 'getHealthDataFromTypes: 0';
+      _currentSteps3 = 'getHealthIntervalDataFromTypes: 0';
+    });
+    print('_onWalkingStartButtonTapped: $_walkingStartDate');
+  }
+
+  void _onReadCurrentDataButtonTapped() async {
+    if (_walkingStartDate == null) {
+      print('_walkingStartDate is null');
+      return;
+    }
+    final startDate = _walkingStartDate!;
+    final endDate = DateTime.now();
+    final steps1 = await _getSteps1(startDate, endDate);
+    final steps2 = await _getSteps2(startDate, endDate);
+    final steps3 = await _getSteps3(startDate, endDate);
+
+    print('steps1: $steps1');
+    print('steps2: $steps2');
+    print('steps3: $steps3');
+    setState(() {
+      _currentSteps1 = 'getTotalStepsInInterval: ${steps1 ?? 0}';
+      _currentSteps2 = 'getHealthDataFromTypes: ${steps2 ?? 0}';
+      _currentSteps3 = 'getHealthIntervalDataFromTypes: ${steps3 ?? 0}';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -209,18 +244,34 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
+          Text('Android用'),
           ElevatedButton(
             onPressed: _onButtonTapped,
             child: const Text('プライバシーポリシー'),
           ),
+          SizedBox(height: 16),
+          Text('ヘルス機能読み取り'),
           ElevatedButton(
             onPressed: _onHealthInitButtonTapped,
             child: const Text('health初期化'),
           ),
           ElevatedButton(
             onPressed: _onReadButtonTapped,
-            child: const Text('歩数読み取り'),
+            child: const Text('過去データ読み取り'),
           ),
+          SizedBox(height: 16),
+          Text('リアルタイム読み取りの試し'),
+          ElevatedButton(
+            onPressed: _onWalkingStartButtonTapped,
+            child: const Text('読み取り開始'),
+          ),
+          ElevatedButton(
+            onPressed: _onReadCurrentDataButtonTapped,
+            child: const Text('現時点データ読み取り'),
+          ),
+          Text('$_currentSteps1'),
+          Text('$_currentSteps2'),
+          Text('$_currentSteps3'),
         ],
       ),
     );
