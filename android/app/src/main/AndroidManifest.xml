@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 歩数 -->
     <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <!-- 活動エネルギー消費 -->
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED"/>
+    <!-- 総カロリー消費 -->
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED"/>
+    <!-- 移動距離 -->
+    <uses-permission android:name="android.permission.health.READ_DISTANCE"/>
+    <!-- 30日以上のデータ -->
     <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY"/>
+    <!-- バックグラウンド読み取り -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_IN_BACKGROUND"/>
+    
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:name="${applicationName}"
@@ -33,21 +46,20 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!-- Intention to show Permissions screen for Health Connect API -->
+        </activity>
+        <activity
+            android:name=".PrivacyPolicyActivity"
+            android:exported="true"
+            android:label="プライバシーポリシー"
+            android:theme="@style/Theme.AppCompat.Light">
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".PrivacyPolicyActivity"
-            android:exported="false"
-            android:label="プライバシーポリシー"
-            android:theme="@style/Theme.AppCompat.Light" />
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
-            android:targetActivity=".MainActivity"
+            android:targetActivity=".PrivacyPolicyActivity"
             android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />

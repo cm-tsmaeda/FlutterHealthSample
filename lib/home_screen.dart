@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:health/health.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -26,21 +27,25 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _methodChannel = MethodChannel('com.example.health_sample');
   Health? _health;
 
-  List<HealthDataType> _healthDataTypes = [
+  final List<HealthDataType> _healthDataTypes = [
     HealthDataType.STEPS,
     // 基礎代謝 <- 今回は不要
-    HealthDataType.BASAL_ENERGY_BURNED,
+    //HealthDataType.BASAL_ENERGY_BURNED,
     // 活動エネルギー消費
     HealthDataType.ACTIVE_ENERGY_BURNED,
-    HealthDataType.DISTANCE_WALKING_RUNNING,
+    // 総カロリー消費
+    HealthDataType.TOTAL_CALORIES_BURNED,
   ];
 
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
+    if (Platform.isIOS) {
+      _healthDataTypes.add(HealthDataType.DISTANCE_WALKING_RUNNING);
+    } else if (Platform.isAndroid) {
+      _healthDataTypes.add(HealthDataType.DISTANCE_DELTA);
       // 総カロリー消費(Android Health Connect)
-      _healthDataTypes.add(HealthDataType.TOTAL_CALORIES_BURNED);
+      //_healthDataTypes.add(HealthDataType.TOTAL_CALORIES_BURNED);
     }
   }
 
@@ -66,8 +71,17 @@ class _HomeScreenState extends State<HomeScreen> {
     await health.configure();
 
     // requesting access to the data types before reading them
-    bool requested = await health.requestAuthorization(_healthDataTypes);
-    print('requested $requested');
+    bool result = await health.requestAuthorization(_healthDataTypes);
+    print('health.requestAuthorization $result');
+
+    if (Platform.isAndroid) {
+      result = await health.requestHealthDataHistoryAuthorization();
+      print('health.requestHealthDataHistoryAuthorization $result');
+      PermissionStatus status = await Permission.activityRecognition.request();
+      print('Permission.activityRecognition $status');
+      status = await Permission.location.request();
+      print('Permission.location $status');
+    }
   }
 
   void _onReadButtonTapped() async {
@@ -75,10 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Health is null');
       return;
     }
-    final health = _health!;
 
-    //final startDateStr = '2025-08-24T00:00:00+09:00'; // JSTにする必要がある
-    final startDateStr = '2025-08-31T00:00:00+09:00';
+    final startDateStr = '2025-08-24T00:00:00+09:00'; // JSTにする必要がある
+    //final startDateStr = '2025-08-31T00:00:00+09:00';
     //final startDateStr = '2025-08-28T00:00:00Z'; // こっちだとUTCになるのでNG
     final startDate = DateTime.parse(startDateStr);
     final endDate = startDate.add(const Duration(days: 7));
