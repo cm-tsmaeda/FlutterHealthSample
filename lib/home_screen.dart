@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // 活動エネルギー消費
     HealthDataType.ACTIVE_ENERGY_BURNED,
     // 総カロリー消費
-    HealthDataType.TOTAL_CALORIES_BURNED,
+    //HealthDataType.TOTAL_CALORIES_BURNED,
   ];
 
   @override
@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _healthDataTypes.add(HealthDataType.DISTANCE_WALKING_RUNNING);
     } else if (Platform.isAndroid) {
       _healthDataTypes.add(HealthDataType.DISTANCE_DELTA);
+      _healthDataTypes.add(HealthDataType.TOTAL_CALORIES_BURNED);
       // 総カロリー消費(Android Health Connect)
       //_healthDataTypes.add(HealthDataType.TOTAL_CALORIES_BURNED);
     }
